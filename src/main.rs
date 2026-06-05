@@ -2,7 +2,7 @@
 use clap::{Arg, Command};
 use reqwest;
 use serde_json::Value;
-use tui_assignment::{remove_provider, save_provider};
+use tui_assignment::{remove_provider, save_provider, set_provider};
 
 #[tokio::main]
 async fn main() {
@@ -40,6 +40,16 @@ async fn main() {
                             .long("provider")
                             .required(true)
                             .help("Name of the provider you want to logout")
+                    )
+            )
+            .subcommand(
+                Command::new("set")
+                    .about("Lets you switch between available AI providers !")
+                    .arg(
+                        Arg::new("provider")
+                            .long("provider")
+                            .required(true)
+                            .help("Name of the provider you want to set to fetch results")
                     )
             )
     )
@@ -82,6 +92,20 @@ async fn main() {
 
                     Err(e) => {
                         println!("Error logging out provider {}",e);
+                    }
+                }
+            }
+
+            Some(("set", login_m)) => {
+                let provider = login_m.get_one::<String>("provider").unwrap();
+                
+                match set_provider(provider){
+                    Ok(_) => {
+                        println!("Successfully changed the current provider to {}",provider);
+                    }
+
+                    Err(e) => {
+                        println!("Error changing the current provider {}",e);
                     }
                 }
             }
