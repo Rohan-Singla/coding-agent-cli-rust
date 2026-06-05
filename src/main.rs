@@ -2,9 +2,7 @@
 use clap::{Arg, Command};
 use reqwest;
 use serde_json::Value;
-use serde::{Deserialize, Serialize};
-use tui_assignment::save_provider;
-use std::collections::HashMap;
+use tui_assignment::{remove_provider, save_provider};
 
 #[tokio::main]
 async fn main() {
@@ -33,6 +31,17 @@ async fn main() {
                             .help("API key for the specified provider")
                     )
             )
+
+            .subcommand(
+                Command::new("logout")
+                    .about("logout provider !")
+                    .arg(
+                        Arg::new("provider")
+                            .long("provider")
+                            .required(true)
+                            .help("Name of the provider you want to logout")
+                    )
+            )
     )
     .get_matches();
 
@@ -59,6 +68,20 @@ async fn main() {
                     }
                     Err(e) => {
                         eprintln!("Failed to save credentials: {}", e);
+                    }
+                }
+            }
+
+            Some(("logout", login_m)) => {
+                let provider = login_m.get_one::<String>("provider").unwrap();
+                
+                match remove_provider(provider){
+                    Ok(_) => {
+                        println!("Successfully logged out provider {}",provider);
+                    }
+
+                    Err(e) => {
+                        println!("Error logging out provider {}",e);
                     }
                 }
             }
