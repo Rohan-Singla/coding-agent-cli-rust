@@ -3,17 +3,8 @@ use clap::{Arg, Command};
 use reqwest;
 use serde_json::Value;
 use serde::{Deserialize, Serialize};
+use tui_assignment::save_provider;
 use std::collections::HashMap;
-
-#[derive(Serialize, Deserialize)]
-struct Config {
-    providers: HashMap<String, ProviderConfig>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct ProviderConfig {
-    api_key: String,
-}
 
 #[tokio::main]
 async fn main() {
@@ -62,7 +53,14 @@ async fn main() {
             Some(("login", login_m)) => {
                 let provider = login_m.get_one::<String>("provider").unwrap();
                 let api_key = login_m.get_one::<String>("api_key").unwrap();
-                println!("{}, {}", provider, api_key);
+                match save_provider(provider, api_key) {
+                    Ok(_) => {
+                        println!("Successfully saved credentials for {}", provider);
+                    }
+                    Err(e) => {
+                        eprintln!("Failed to save credentials: {}", e);
+                    }
+                }
             }
     
             _ => {
@@ -73,14 +71,20 @@ async fn main() {
     }
 
 
-    if let Some(("login",_login_m)) = cli.subcommand() {
-        let provider = _login_m.get_one::<String>("provider").unwrap();
-        let api_key = _login_m.get_one::<String>("api_key").unwrap();
+    // if let Some(("login",_login_m)) = cli.subcommand() {
+    //     let provider = _login_m.get_one::<String>("provider").unwrap();
+    //     let api_key = _login_m.get_one::<String>("api_key").unwrap();
 
-        println!("{},{}",provider,api_key);
+    //     match save_provider(provider, api_key) {
+    //         Ok(_) => {
+    //             println!("Successfully saved credentials for {}", provider);
+    //         }
+    //         Err(e) => {
+    //             eprintln!("Failed to save credentials: {}", e);
+    //         }
+    //     }
 
-
-    } 
+    // } 
 
 }
 
