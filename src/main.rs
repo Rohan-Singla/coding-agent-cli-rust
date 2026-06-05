@@ -1,6 +1,6 @@
 
 use clap::{Arg, Command};
-use tui_assignment::{list_providers, remove_provider, save_provider, set_provider};
+use tui_assignment::{fetch_providers_json, list_models, list_providers, remove_provider, save_provider, set_provider};
 
 #[tokio::main]
 async fn main() {
@@ -49,6 +49,11 @@ async fn main() {
                                 .help("Name of the provider you want to set to fetch results"),
                         ),
                 ),
+
+        )
+        .subcommand(
+            Command::new("models")
+            .about("This command lists all the available models ")
         )
         .get_matches();
 
@@ -105,4 +110,13 @@ async fn main() {
             }
         }
     }
+
+    if let Some(("models",_models)) = cli.subcommand()  {
+
+        match list_models().await {
+            Ok(_) => {}
+            Err(e) => eprintln!("{e}"),
+        }
+    }
 }
+
