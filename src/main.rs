@@ -1,6 +1,7 @@
-
 use clap::{Arg, Command};
-use tui_assignment::{fetch_providers_json, list_models, list_providers, remove_provider, save_provider, set_provider};
+use tui_assignment::{
+    fetch_providers_json, list_models, list_providers, remove_provider, save_provider, set_model, set_provider
+};
 
 #[tokio::main]
 async fn main() {
@@ -9,10 +10,7 @@ async fn main() {
         .subcommand(
             Command::new("providers")
                 .about("Provider-related commands")
-                .subcommand(
-                    Command::new("list")
-                        .about("List all available providers"),
-                )
+                .subcommand(Command::new("list").about("List all available providers"))
                 .subcommand(
                     Command::new("login")
                         .about("Login to a specific provider")
@@ -30,14 +28,12 @@ async fn main() {
                         ),
                 )
                 .subcommand(
-                    Command::new("logout")
-                        .about("logout provider !")
-                        .arg(
-                            Arg::new("provider")
-                                .long("provider")
-                                .required(true)
-                                .help("Name of the provider you want to logout"),
-                        ),
+                    Command::new("logout").about("logout provider !").arg(
+                        Arg::new("provider")
+                            .long("provider")
+                            .required(true)
+                            .help("Name of the provider you want to logout"),
+                    ),
                 )
                 .subcommand(
                     Command::new("set")
@@ -49,22 +45,27 @@ async fn main() {
                                 .help("Name of the provider you want to set to fetch results"),
                         ),
                 ),
-
         )
         .subcommand(
             Command::new("models")
-            .about("This command lists all the available models ")
+                .about("This command lists all the available models")
+                .subcommand(
+                    Command::new("set").about("Set the active model").arg(
+                        Arg::new("model")
+                            .long("model")
+                            .required(true)
+                            .help("Name of the model to set as active"),
+                    ),
+                ),
         )
         .get_matches();
 
     if let Some(("providers", providers_m)) = cli.subcommand() {
         match providers_m.subcommand() {
-            Some(("list", _)) => {
-                match list_providers().await {
-                    Ok(_) => {}
-                    Err(e) => eprintln!("{e}"),
-                }
-            }
+            Some(("list", _)) => match list_providers().await {
+                Ok(_) => {}
+                Err(e) => eprintln!("{e}"),
+            },
 
             Some(("login", login_m)) => {
                 let provider = login_m.get_one::<String>("provider").unwrap();
@@ -111,12 +112,24 @@ async fn main() {
         }
     }
 
-    if let Some(("models",_models)) = cli.subcommand()  {
+    if let Some(("models", models_m)) = cli.subcommand() {
+        match models_m.subcommand() {
+            Some(("set", set_m)) => {
+                let model = set_m.get_one::<String>("model").unwrap();
 
-        match list_models().await {
-            Ok(_) => {}
-            Err(e) => eprintln!("{e}"),
+                match set_model(model).await {
+
+                    Ok(_) => println!("Successfully set model to {}", model),
+                    
+                    Err(e) => eprintln!("{e}"),
+                }
+            }
+            _ => {
+                match list_models().await {
+                    Ok(_) => {}
+                    Err(e) => eprintln!("{e}"),
+                }
+            }
         }
     }
 }
-
