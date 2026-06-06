@@ -1,4 +1,4 @@
-use clap::{Arg, Command};
+use clap::{Arg, Command, value_parser};
 use tui_assignment::{list_models, list_providers, remove_provider, run_agent, save_provider, set_model, set_provider};
 
 #[tokio::main]
@@ -19,13 +19,29 @@ async fn main() {
                             Arg::new("provider")
                                 .long("provider")
                                 .required(true)
-                                .help("Name of the provider to log in to"),
+                                .help("Name of the provider to log in to")
+                                .value_parser(|s: &str| {
+                                    if s.trim().is_empty() {
+                                        Err(String::from("Provider name cannot be empty"))
+                                    } else {
+                                        Ok(s.to_string())
+                                    }
+                                }),
                         )
                         .arg(
                             Arg::new("api_key")
                                 .long("api_key")
                                 .required(true)
-                                .help("API key for the specified provider"),
+                                .help("API key for the specified provider")
+                                .value_parser(|s: &str| {
+                                    if s.trim().is_empty() {
+                                        Err(String::from("API key cannot be empty"))
+                                    } else if !s.chars().all(|c| c.is_ascii_graphic()) {
+                                        Err(String::from("API key must be ASCII graphic characters"))
+                                    } else {
+                                        Ok(s.to_string())
+                                    }
+                                }),
                         ),
                 )
                 .subcommand(
@@ -35,7 +51,14 @@ async fn main() {
                             Arg::new("provider")
                                 .long("provider")
                                 .required(true)
-                                .help("Name of the provider you want to logout"),
+                                .help("Name of the provider you want to logout")
+                                .value_parser(|s: &str| {
+                                    if s.trim().is_empty() {
+                                        Err(String::from("Provider name cannot be empty"))
+                                    } else {
+                                        Ok(s.to_string())
+                                    }
+                                }),
                         ),
                 )
                 .subcommand(
@@ -45,7 +68,14 @@ async fn main() {
                             Arg::new("provider")
                                 .long("provider")
                                 .required(true)
-                                .help("Name of the provider you want to set"),
+                                .help("Name of the provider you want to set")
+                                .value_parser(|s: &str| {
+                                    if s.trim().is_empty() {
+                                        Err(String::from("Provider name cannot be empty"))
+                                    } else {
+                                        Ok(s.to_string())
+                                    }
+                                }),
                         ),
                 ),
         )
@@ -59,7 +89,14 @@ async fn main() {
                             Arg::new("model")
                                 .long("model")
                                 .required(true)
-                                .help("Name of the model to set as active"),
+                                .help("Name of the model to set as active")
+                                .value_parser(|s: &str| {
+                                    if s.trim().is_empty() {
+                                        Err(String::from("Model name cannot be empty"))
+                                    } else {
+                                        Ok(s.to_string())
+                                    }
+                                }),
                         ),
                 ),
         )
@@ -71,10 +108,18 @@ async fn main() {
                         .short('p')
                         .long("prompt")
                         .required(true)
-                        .help("The task you want the agent to perform"),
+                        .help("The task you want the agent to perform")
+                        .value_parser(|s: &str| {
+                            if s.trim().is_empty() {
+                                Err(String::from("Prompt cannot be empty"))
+                            } else {
+                                Ok(s.to_string())
+                            }
+                        }),
                 ),
         )
         .get_matches();
+   
 
     if let Some(("providers", providers_m)) = cli.subcommand() {
         match providers_m.subcommand() {

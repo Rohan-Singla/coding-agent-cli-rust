@@ -205,16 +205,24 @@ pub async fn run_agent(prompt: &str) -> Result<(), Box<dyn std::error::Error>> {
         .ok_or("No active model set. Run 'models set --model <name>' first")?;
 
     let mut all_code = String::new();
+
     for entry in walkdir::WalkDir::new(".") {
+
         let entry = entry?;
+
         if entry.path().extension().and_then(|e| e.to_str()) == Some("rs") {
+
             let content = std::fs::read_to_string(entry.path())?;
+
             all_code.push_str(&format!("\n\n// File: {}\n{}", entry.path().display(), content));
+
         }
     }
 
     let full_prompt = if all_code.is_empty() {
+        
         prompt.to_string()
+
     } else {
         format!("Here is the codebase:\n{}\n\nTask: {}", all_code, prompt)
     };
