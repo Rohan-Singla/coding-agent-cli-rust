@@ -1,6 +1,6 @@
 use clap::{Arg, Command};
 use tui_assignment::{
-    fetch_providers_json, list_models, list_providers, remove_provider, save_provider, set_model, set_provider
+    fetch_providers_json, list_models, list_providers, remove_provider, run_agent, save_provider, set_model, set_provider
 };
 
 #[tokio::main]
@@ -58,6 +58,15 @@ async fn main() {
                     ),
                 ),
         )
+        .subcommand((
+            Command::new("agent")
+            .arg(
+                Arg::new("query")
+                .required(true)
+                .short('p')
+                .help("write your query !")
+            )
+        ))
         .get_matches();
 
     if let Some(("providers", providers_m)) = cli.subcommand() {
@@ -103,6 +112,7 @@ async fn main() {
                     }
                 }
             }
+            
 
             _ => {
                 println!(
@@ -113,6 +123,8 @@ async fn main() {
     }
 
     if let Some(("models", models_m)) = cli.subcommand() {
+
+
         match models_m.subcommand() {
             Some(("set", set_m)) => {
                 let model = set_m.get_one::<String>("model").unwrap();
@@ -130,6 +142,16 @@ async fn main() {
                     Err(e) => eprintln!("{e}"),
                 }
             }
+        }
+    }
+
+    if let Some(("agent", agents_m)) = cli.subcommand() {
+
+        let prompt = agents_m.get_one::<String>("query").unwrap();
+
+        match run_agent(prompt).await {
+            Ok(_) => {}
+            Err(e) => eprintln!("{e}"),
         }
     }
 }
